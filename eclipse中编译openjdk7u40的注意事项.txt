@@ -1,0 +1,23 @@
+eclipse中调试hotspot虚拟机的步骤：
+一、把hotspot的源代码导入到eclipse
+	file->new->Makefile Project with Existing Code对应的project name 可以自定义，
+	对应的Existing Code location 选择openjdk目录下的   hotspot目录，然后点击finish。
+二、设置build command和build location
+	（１）．把use default build command选项去掉，在build command下输入
+	make -f Makefile clean jvmg ALT_BOOTDIR=/usr/lib/jvm/jdk ARCH_DATA_MODEL=64 LANG=C
+	注意：ALT_BOOTDIR中的地址是本地jdk的主目录。如果机器是64位，必须加上ARCH_DATA_MODEL=64。
+	（２）.在原有的build Location地址后面追加make，表明在hotspot目录下的make目录中查找Makefile文件。
+	至此，可以build出一个hotspot虚拟机了。单线程环境下等到４０分钟左右即可。
+	可以在最后的结果目录/home/zeng/extDisk/openjdk-7u40/openjdk/hotspot/build/linux/linux_amd64_compiler2/jvmg中执行./test_gamma脚本文件，如果执行成功，则会输出正常的结果。否则，依据错误查找原因。
+三、调试
+	（１）．在调试的时候，在debug configuration菜单中，建立一个名称为hotspot的项，Ｐroject为hotspot，Ｃ/C++ Application为gamma文件所在的目录路径。
+	注意：在此界面，要选中Disable auto build选项，避免每次调试的时候都要重新build一次，我就是在这个地方弄了一天。。。。也是服了。。
+	（二）、在Ａrguments菜单中，Ｐrogram arguments文本框中添加Queens，一个编译脚本自动生成的用于求解八皇后问题的java程序。
+	（三）、在Environment菜单下，新建三个环境变量。
+	CLASSPATH=.:/usr/lib/jvm/jdk/jre/lib/rt.jar:/usr/lib/jvm/jdk/jre/lib/i18n.jar
+	JAVA_HOME=/usr/lib/jvm/jdk
+	然后，点击Ｄebug按钮即可调试了。。。
+	
+
+在eclipse中调试hotspot的时候，记得在debug-debug configuration中取消automatically build，
+即选中disable auto选项。

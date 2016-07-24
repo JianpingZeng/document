@@ -1,0 +1,80 @@
+编译步骤：
+	单独安装oracle jdk1.7.0_4。
+	单独安装ant。
+	使用命令sudo apt-get install m4 libasound2-dev libcups2-dev libxrender-dev xorg-dev xutils-dev x11proto-print-dev binutils libmotif3 libmotif-dev安装所有的其他依赖项。
+	
+	
+（一）.在openjdk的根目录下建立一个build脚本，用于配置一些环境变量，具体见openjdk目录下的build.sh文件。
+	内容如下：
+	# This is a shell configuration file for openjdk7 build.
+	# sets language
+	export LANG=C
+
+	#import a bootstrap jdk path
+	export ALT_BOOTDIR="/usr/lib/jvm/jdk"
+
+	#allows download dependency automatically
+	export ALLOW_DOWNLOADS=true
+
+	#sets the number of parallel thread when compiling.
+	export HOTSPOT_BUILD_JOBS=4
+	export ALT_PARALLEL_COMPILE=4
+
+	#skips comparision between the newer image and older
+	export SKIP_COMPARE_IMAGES=true
+
+	#using the precompiled header, it will slower if no adding
+	export USE_PRECOMPILED_HEADER=true
+
+	#needed compiled items
+	export BUILD_HOTSPOT=true
+	export BUILD_JDK=false
+	export BUILD_LANGTOOLS=false
+	export BUILD_JAXP=false
+	export BUILD_CORBA=false
+	export BUILD_JAXWS=false
+
+	#to avoid building for javaws and java add-in of browser
+	BUILD_DEPLOY=false;
+
+	#Dot not build a install image because some wired dependency will happened.
+	BUILD_INSTALL=false;
+
+	export SKIP_DEBUG_BUILD=false
+	export SKIP_FASTDEBUG=true
+	export DEBUG_NAME=debug
+
+	# A directory where building stores
+	export ALT_OUTPUTDIR=/home/zeng/extDisk/openjdk-7u6/openjdk/build/
+
+	unset JAVA_HOME
+	unset CLASSPATH
+	make sanity
+
+	#make 2>&1 | tee $ALT_OUTPUTDIR/build.log
+
+	最后验证通过，如下所示：
+	Sanity check passed.
+
+（二）.将make sanity 注释，取消make 2>&1那一行的注释。
+	执行上述脚本，会生成一个debug版本（也就是jvmg）的hotspot虚拟机。当前只编译了hotspot虚拟机。
+	在jvmg目录下执行./test_gamma脚本即可测试当前生成的调试版虚拟机gamma是否可以运行。
+	
+编译错误与解决方法：
+（1）.最后一步运行gamma版的java时，出现如下错误：
+./test_gamma
+Error occurred during initialization of VM
+Using java runtime at: /usr/lib/jvm/jdk1.8.0_25/jre
+Unable to load native library: /usr/lib/jvm/jdk1.8.0_25/jre/lib/amd64/libjava.so: symbol JVM_GetClassTypeAnnotations, version SUNWprivate_1.1 not defined in file libjvm.so with link time reference
+使用openjdk6也是同样的错误：
+relocation error: /usr/lib/jvm/java-6-openjdk-amd64/jre/lib/amd64/libjava.so: symbol JVM_FindClassFromCaller, version SUNWprivate_1.1 not defined in file libjvm.so with link time reference
+
+	解决方案1（试过，不行）
+	我们发现在jvmg目录下其实已经存在对应的libjvm.so文件，所以我们只需要在/etc/ld.so.conf文件中把当前目录加入即可。
+	/home/zeng/extDisk/openjdk-7u6/openjdk/build-debug/hotspot/outputdir/linux_amd64_compiler2/jvmg
+	然后在终端下执行sudo ldconfig命令即可。
+	解决方案2（也不行）
+	网上有人使用centos编译的时候，使用的bootstrap Java是openjdk的，但我使用的是oracle jdk8，也出现了这个错误。
+	解决方案3（）
+	上述错误都是因为错误的jdk版本，最后把bootstrap JDK换成了oracle jdk7u4之后就可以了。
+	

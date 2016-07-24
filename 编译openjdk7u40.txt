@@ -1,0 +1,85 @@
+编译步骤：
+	单独安装oracle jdk1.7.0_4。
+	单独安装ant。
+	使用命令sudo apt-get install m4 libasound2-dev libcups2-dev libxrender-dev xorg-dev xutils-dev x11proto-print-dev binutils libmotif3 libmotif-dev安装所有的其他依赖项。
+	
+	
+（一）.在openjdk的根目录下建立一个build脚本，用于配置一些环境变量，具体见openjdk目录下的build.sh文件。
+	内容如下：
+	# This is a shell configuration file for openjdk7 build.
+
+	# sets language
+	export LANG=C
+
+	#import a bootstrap jdk path
+	export ALT_BOOTDIR="/usr/lib/jvm/jdk"
+
+	#allows download dependency automatically
+	export ALLOW_DOWNLOADS=true
+
+	#sets the number of parallel thread when compiling.
+	export HOTSPOT_BUILD_JOBS=4
+	export ALT_PARALLEL_COMPILE=4
+
+	#skips comparision between the newer image and older
+	export SKIP_COMPARE_IMAGES=true
+
+	#using the precompiled header, it will slower if no adding
+	export USE_PRECOMPILED_HEADER=true
+
+	#needed compiled items
+	export BUILD_HOTSPOT=true
+	export BUILD_JDK=true	
+	export BUILD_LANGTOOLS=true
+	export BUILD_JAXP=true
+	export BUILD_CORBA=true
+	export BUILD_JAXWS=true
+
+	#to avoid building for javaws and java add-in of browser
+	BUILD_DEPLOY=false;
+
+	#Dot not build a install image because some wired dependency will happened.
+	BUILD_INSTALL=false;
+
+	export SKIP_DEBUG_BUILD=false
+	export SKIP_FASTDEBUG=true
+	export DEBUG_NAME=debug
+
+	# A directory where building stores
+	export ALT_OUTPUTDIR=/home/zeng/extDisk/openjdk-7u40/openjdk/build/
+
+	unset JAVA_HOME
+	unset CLASSPATH
+	unset LD_LIBRARY_PATH 
+
+	# firstly, make sanity, and then make.
+	make sanity
+
+	# secondly
+	#make 2>&1 | tee $ALT_OUTPUTDIR/build.log
+
+	最后验证通过，如下所示：
+	Sanity check passed.
+
+（二）.将make sanity 注释，取消make 2>&1那一行的注释。
+	执行上述脚本，会生成一个debug版本（也就是jvmg）的hotspot虚拟机。当前只编译了hotspot虚拟机。
+	在jvmg目录下执行./test_gamma脚本即可测试当前生成的调试版虚拟机gamma是否可以运行。
+	
+编译错误与解决方法：
+（一）. Error: time is more than 10 years from present: 1120165200000
+java.lang.RuntimeException: time is more than 10 years from present: 1120165200000
+	解决方法：修改/home/zeng/extDisk/openjdk-7u40/openjdk/jdk/src/share/classes/java/util中的CurrencyData.properties
+	文件，将其中的10年之前的时间改为10年之内即可。
+（二）.在jvmg目录中运行./gamma的时候出现如下错误：
+	jvmg/gamma: error while loading shared libraries: libjvm.so: 
+	cannot open shared object file: No such file or directory
+	解决方法：编辑./gamma文件所在目录下的env.sh文件，追加如下两行
+	LD_LIBRARY_PATH=.:${JAVA_HOME}/jre/lib/amd64
+	export LD_LIBRARY_PATH
+	保存退出之后，执行. ./env.sh命令（注意，两个点之间有空格），然后再执行./gamma，上述错误不再出现。
+（三）.在eclipse中编译hotspot，调试的时候也会出现上述错误，但是上述方法不可行。最终的解决方法如下：
+	解决方法：修改文件/etc/ld.so.conf，将hotspot虚拟机中的jvmg的路径
+	（我的目录为：/home/zeng/extDisk/openjdk-7u40/openjdk/hotspot/build/linux/linux_amd64_compiler2/jvmg）作为一行追加到文件中，
+	然后执行sudo ldconfig使其生效。
+	
+

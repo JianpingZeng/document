@@ -1,0 +1,61 @@
+Ubuntu 14.04 LTS版本安装openjdk1.8的步骤与错误处理。
+####如若没有安装gcc和g++，需使用sudo apt-get install gcc g++安装。
+
+环境变量
+export LANG=C 
+配置编译选项
+bash ./configure --with-debug-level=fastdebug
+
+后面会出现一些依赖库的缺失问题，只需要按照给出的提示进行安装即可。
+比如：
+sudo apt-get install libX11-dev libxext-dev libxrender-dev libxtst-dev libxt-dev 
+sudo apt-get install libcups2-dev
+sudo apt-get install libasound2-dev
+
+最后配置成功之后，配置结果
+====================================================
+A new configuration has been successfully created in
+/openjdk-8u40-src-b25-10_feb_2015/openjdk/build/linux-x86_64-normal-server-fastdebug
+using configure arguments '--with-debug-level=fastdebug'.
+
+Configuration summary:
+* Debug level:    fastdebug
+* JDK variant:    normal
+* JVM variants:   server
+* OpenJDK target: OS: linux, CPU architecture: x86, address length: 64
+
+Tools summary:
+* Boot JDK:       java version "1.8.0_25" Java(TM) SE Runtime Environment (build 1.8.0_25-b17) Java HotSpot(TM) 64-Bit Server VM (build 25.25-b02, mixed mode)  (at /usr/lib/jvm/jdk1.8.0_25)
+* C Compiler:     gcc-4.8 (Ubuntu 4.8.4-2ubuntu1~14.04) version 4.8.4 (at /usr/bin/gcc-4.8)
+* C++ Compiler:   g++-4.8 (Ubuntu 4.8.4-2ubuntu1~14.04) version 4.8.4 (at /usr/bin/g++-4.8)
+
+Build performance summary:
+* Cores to use:   4
+* Memory limit:   9841 MB
+* ccache status:  installed and in use
+
+直接编译
+
+make
+就可以了
+
+全部编译成功之后，会出现
+----- Build times -------
+Start 2015-10-20 09:21:37
+End   2015-10-20 09:48:27
+00:00:35 corba
+00:20:53 hotspot
+00:00:18 jaxp
+00:00:28 jaxws
+00:03:49 jdk
+00:00:47 langtools
+00:26:50 TOTAL
+-------------------------
+Finished building OpenJDK for target 'default'
+
+现在可以去build/linux-x86_64-normal-server-fastdebug/jdk/bin 目录下执行./java -version
+就会出现如下提示：
+openjdk version "1.8.0-internal-fastdebug"
+OpenJDK Runtime Environment (build 1.8.0-internal-fastdebug-root_2015_10_20_09_20-b00)
+OpenJDK 64-Bit Server VM (build 25.40-b25-fastdebug, mixed mode)
+
